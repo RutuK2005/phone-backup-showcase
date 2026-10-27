@@ -1,29 +1,39 @@
-# Current architecture
+# Current architecture — preview 0.3
 
 ```mermaid
 flowchart LR
-    Phone[Android phone / MTP] -->|read only| WPD[Windows Portable Devices adapter]
-    WPD --> Verify[Bounded import + second phone read + SHA-256]
-    Verify --> PC[User-selected unencrypted PC folder]
-    PC --> Core[Shared backup core]
-    UI[WPF interface] --> WPD
+    Phone[Android / MTP] -->|read only| Worker[Isolated Windows USB worker]
+    UI[WPF desktop] -->|structured protocol| Worker
+    Worker --> Scan[Recursive scan and strict verification]
+    Scan --> Store[Plaintext managed PC store]
+    Store --> Gen[Immutable original generations]
+    Gen --> Core[Shared backup core]
+    CLI[CLI] --> Core
     UI --> Core
-    CLI[Command-line interface] --> Core
-    Core --> Engine[Pinned restic engine]
-    Engine --> Vault[Encrypted local vault]
-    Vault --> Restore[Fresh-folder restore + hash verification]
+    Core --> Restic[Pinned restic]
+    Restic --> Vault[Encrypted vault and recovery inventory]
+    Vault --> Verify[Streamed original-byte verification]
+    Vault --> Library[In-memory paged library]
+    Library --> UI
+    Vault --> Restore[Fresh-folder selected or full restore]
 ```
 
-The USB adapter exposes only list, file metadata and read-stream operations to the importer. Device content is treated as untrusted: local path validation, no-overwrite writes, transfer length limits and checksum checks apply before completing an import. USB and backup have distinct completion states.
+## Transport and recovery
 
-The shared backup core owns inventory capture, encrypted snapshot invocation, stored-byte verification, verified-history filtering and safe restore. The vault includes recovery inventory; an old application catalog is not required to restore. Process arguments are passed structurally rather than through a shell. The vault passphrase is not saved in settings or command-line arguments.
+The adapter exposes list/stat/read only. A worker process isolates blocking Windows transport calls. The desktop validates structured messages and success/exit state; cancellation and an inactivity deadline stop the owned worker. Progress is tied to actual enumeration/read/local-check activity.
 
-## Tradeoffs under evaluation
+Managed store plans and flushed append journals record completed originals. Repeats/resumes check phone bytes and local hashes, not filename/size/time alone. Earlier generations remain immutable. Torn unfinished journals and unjournaled committed files receive explicit recovery checks. Incomplete runs never become a completed import result.
 
-- The first implementation stages plaintext PC copies. The user chooses the location and is informed they remain. Future encrypted staging/direct streaming needs design and recovery testing.
-- Double-reading USB files and re-reading stored originals favors explicit verification, but costs time and I/O. Large-library efficiency is unmeasured.
-- A device can change between separate reads. The workflow is not an atomic device snapshot, and imported files can subsequently change on the phone.
-- USB cancellation waits for the current Windows transport call. A hung driver needs stronger isolation/timeouts before a consumer reliability claim.
-- restic is an evaluated integration, not a frozen choice for every future storage requirement. Cloud and mobile background behavior need separate evidence.
+## Storage and library
 
-This diagram describes the current developer preview; planned components are not presented as implemented services.
+The backup core captures inventories inside encrypted snapshots, streams stored originals through strict archive/inventory/length/hash validation and rechecks PC sources before verified tagging. The metadata format remains compatible with prior v1 vaults. Restores require a new/empty destination and verify every restored original; selected export also validates membership in the saved inventory.
+
+The library indexes the selected verified snapshot in memory. Search, folder albums, modified dates, categories and checksum duplicates are metadata operations. Bounded thumbnail pages decode verified originals into detached display pixels, without persistent plaintext thumbnails/catalog. Media decoding and temporary inventory/secret handling still need production hardening.
+
+## Tradeoffs
+
+- Plaintext staging is explicitly retained; encrypted direct streaming/staging is future work.
+- New generations use local copies rather than hardlinks, preserving independence but consuming disk space.
+- Repeat USB verification still reads all selected phone bytes once. Companion-side hashes can improve that later.
+- Multi-file phone state is not an atomic snapshot. A physical cable-pull test is separate from killing a worker.
+- restic is an evaluated storage integration, not a guarantee for every future cloud/mobile requirement.
