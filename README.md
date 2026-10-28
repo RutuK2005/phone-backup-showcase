@@ -2,11 +2,19 @@
 
 A Windows-first Android backup product in development: preserve original photos, videos and selected files on your own PC, with a clear way to verify and restore them.
 
-**Version 0.4 developer preview.** Product implementation is private. This public showcase describes measured engineering progress without distributing personal media or proprietary source.
+**Version 0.5 developer preview.** Product implementation is private. This public showcase describes measured engineering progress without distributing personal media or proprietary source.
 
 ![Library interface — explicitly labeled generated demo artwork, no personal media](assets/windows-preview.png)
 
 The image shows the implemented library UI with generated layout-review artwork, not a real user library. Automated library tests separately use synthetic originals in an actual encrypted vault.
+
+## Beginner setup in 0.5
+
+New users accept one recommended backup location. Simple backup saves ordinary readable originals with verified recovery history, without a password/vault/staging-folder questionnaire. Password-protected encrypted archives are optional. USB content groups and managed PC folders simplify the first backup; both storage modes use the same gallery, restore and Wi-Fi receiver. Earlier encrypted vaults remain unchanged.
+
+![Simple setup with an illustrative location; no personal data](assets/simple-setup.png)
+
+21 Simple-storage scenarios passed, including portable reopen, exact restore, unchanged generation reuse, damaged-byte repair and safe failure. Receiver/actual-Java checks passed 25 private and 26 Simple scenarios; gallery smoke passed 12 private and 13 Simple checks. Core/USB regressions remain 24 each, Android units nine. These fixture/Java results do not establish physical Android/background acceptance. The readable mode has no encryption; private transfer copies remain readable in this preview. No automatic deletion/pruning.
 
 ## Current capabilities
 
