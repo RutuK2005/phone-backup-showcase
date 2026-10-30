@@ -2,13 +2,15 @@
 
 A Windows-first Android backup product in development: keep original photos, videos and selected files on your PC, verify saved bytes, and recover them into ordinary folders.
 
-**Version 0.8 developer preview.** Product source is private. This public repository contains engineering explanations and synthetic interface screenshots, not personal media or downloadable product binaries.
+**Version 0.9 developer preview.** Product source is private. This public repository contains engineering explanations and synthetic interface screenshots, not personal media or downloadable product binaries.
 
-![Memories gallery with generated artwork; no personal photos](assets/memories-gallery-0.8.png)
+![Memories gallery with generated artwork; no personal photos](assets/memories-gallery-0.9.png)
 
 The native interface above is rendered from the application using explicitly labeled synthetic artwork. It demonstrates the layout, not a real user's library or face-recognition accuracy.
 
 ## What changed
+
+- **Add to this collection (0.9):** import only newly selected folders into an earlier collection. Existing paths/dates, identity and people/favorites stay. Only new sources and matched duplicate targets are read; the old library is not copied again. Atomic inventory/result publication and checked retry keep interruption recoverable. Earlier whole-library checks remain historical; the UI states this explicitly.
 
 - Gather multiple old backup folders into a new Year/Month collection. Exact full-checksum duplicates share one copy; edited/compressed variants remain separate. Originals stay readable in Explorer, and old folders are untouched.
 - Browse a continuous month timeline with search, month navigation, Videos, Favorites, People and Hidden views. Folder addition immediately starts a scan with visible file/byte progress and cancellation.
@@ -24,7 +26,7 @@ A native Android companion and Windows receiver implement one-use QR pairing, ce
 
 ## Evidence and limits
 
-The latest organizer suite passes 53 generated-data scenarios covering exact duplicates, source preservation, interruption/resume, date extraction, Takeout conflicts/changes, metadata size limits and people-index behavior. Regression runs pass 24 private-core, 21 Simple-storage, 24 USB, 24 private-LAN and 25 Simple-LAN scenarios. Packaged UI/media checks cover timeline virtualization, names/hiding/favorites, native inference on a public test portrait, Unicode video decoding, pause/seek, and the existing backup library.
+The latest organizer suite passes 65 generated-data scenarios covering exact duplicates, source preservation, interruption/resume, date extraction, Takeout conflicts/changes, metadata size limits, people-index behavior and incremental additions. The 0.9 package also passed 23 timeline/progress and 10 people/addition UI checks, for 98 targeted cases. The unchanged transport/storage figures below are earlier regression evidence. Regression runs pass 24 private-core, 21 Simple-storage, 24 USB, 24 private-LAN and 25 Simple-LAN scenarios. Packaged UI/media checks cover timeline virtualization, names/hiding/favorites, native inference on a public test portrait, Unicode video decoding, pause/seek, and the existing backup library.
 
 These are engineering fixtures, not production certification. Face-group accuracy across diverse real libraries, broad codec/HDR coverage, large-library performance, decoder isolation, disk-full/power-loss behavior, signed distribution, commercial dependency/model clearance and physical automatic phone backup remain release gates. HEIC/RAW face analysis, cloud storage, saved compression variants and iPhone support are not implemented. The native codec bundle's individual licensing obligations and model training provenance still require review before commercial distribution.
 

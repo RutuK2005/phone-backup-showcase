@@ -1,4 +1,4 @@
-# Architecture — preview 0.8
+# Architecture — preview 0.9
 
 ```mermaid
 flowchart LR
@@ -40,3 +40,7 @@ USB repeat verification reads every selected phone file; metadata alone cannot p
 Android scheduling is best effort under OS quotas. Windows startup, tray operation and protected private unlock require opt-in. Pairing pins the PC certificate and supports revocation; firewall setup is scoped to Private networks/local subnet. PC wake, real Android permissions/Doze/reboot and physical cable reconnection need hardware acceptance. There is no SSID allowlist or cloud relay.
 
 The organized collection and selected backup-version library are separate today. Unifying them must preserve source provenance, immutable recovery history and honest verification status. Commercial release additionally needs dependency/plugin/model provenance, security, signing and installer/update reviews.
+
+## Incremental collection additions
+
+New roots are scanned separately and merged by full content hash. Existing duplicate targets are verified before skip; unrelated originals are not read or copied. New destinations never overwrite prior originals. Plan v3 retains the collection identity and embeds the matching addition result in the same atomic inventory update, while previous metadata remains in a batch history. If interrupted before commit, the old inventory remains authoritative and retry verifies/reuses finished files. External reports can be refreshed after commit. The gallery retains its people/favorite index and explicitly labels earlier checks as historical.
