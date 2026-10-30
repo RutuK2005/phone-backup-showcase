@@ -1,74 +1,38 @@
 # Phone Backup
 
-A Windows-first Android backup product in development: preserve original photos, videos and selected files on your own PC, with a clear way to verify and restore them.
+A Windows-first Android backup product in development: keep original photos, videos and selected files on your PC, verify saved bytes, and recover them into ordinary folders.
 
-**Version 0.5 developer preview.** Product implementation is private. This public showcase describes measured engineering progress without distributing personal media or proprietary source.
+**Version 0.8 developer preview.** Product source is private. This public repository contains engineering explanations and synthetic interface screenshots, not personal media or downloadable product binaries.
 
-![Library interface — explicitly labeled generated demo artwork, no personal media](assets/windows-preview.png)
+![Memories gallery with generated artwork; no personal photos](assets/memories-gallery-0.8.png)
 
-The image shows the implemented library UI with generated layout-review artwork, not a real user library. Automated library tests separately use synthetic originals in an actual encrypted vault.
+The native interface above is rendered from the application using explicitly labeled synthetic artwork. It demonstrates the layout, not a real user's library or face-recognition accuracy.
 
-## Beginner setup in 0.5
+## What changed
 
-New users accept one recommended backup location. Simple backup saves ordinary readable originals with verified recovery history, without a password/vault/staging-folder questionnaire. Password-protected encrypted archives are optional. USB content groups and managed PC folders simplify the first backup; both storage modes use the same gallery, restore and Wi-Fi receiver. Earlier encrypted vaults remain unchanged.
+- Gather multiple old backup folders into a new Year/Month collection. Exact full-checksum duplicates share one copy; edited/compressed variants remain separate. Originals stay readable in Explorer, and old folders are untouched.
+- Browse a continuous month timeline with search, month navigation, Videos, Favorites, People and Hidden views. Folder addition immediately starts a scan with visible file/byte progress and cancellation.
+- Play collection videos with LibVLC, including pause, seek and volume. Checksummed video posters are bounded; full original verification precedes playback. Shell item selection handles Unicode filenames.
+- Optionally enable automatic local face grouping using pinned OpenCV YuNet/SFace models. Name, merge or correct suggested groups, hide a person from browsing, and forget face data. Names, face vectors and preferences are stored locally in plaintext; hiding is not file encryption. No cloud recognition or identity lookup.
+- Import extracted Google Takeout parts with conservative capture-date/sidecar matching. Combine a completed collection with new folders into a fresh destination. Ambiguous metadata is reported; no direct Google account sync or in-place append is claimed.
 
-![Simple setup with an illustrative location; no personal data](assets/simple-setup.png)
+## Backup foundations
 
-21 Simple-storage scenarios passed, including portable reopen, exact restore, unchanged generation reuse, damaged-byte repair and safe failure. Receiver/actual-Java checks passed 25 private and 26 Simple scenarios; gallery smoke passed 12 private and 13 Simple checks. Core/USB regressions remain 24 each, Android units nine. These fixture/Java results do not establish physical Android/background acceptance. The readable mode has no encryption; private transfer copies remain readable in this preview. No automatic deletion/pruning.
+Simple backup starts with one recommended location and readable, verified recovery history. Private encrypted archives remain optional. The Windows app includes read-only USB imports with a separate worker, resumable file checkpoints, verified repeat reuse, and safe full/selected restore.
 
-## Current capabilities
+A native Android companion and Windows receiver implement one-use QR pairing, certificate-pinned HTTPS, missing-content uploads, device revocation and opt-in background setup. Physical Pixel 7 / Android 17 background, permission and battery acceptance remains unfinished; the PC must be awake. The organized collection gallery and backup-version library are currently separate workflows.
 
-- Native C#/.NET 10 + WPF desktop interface with shared backup core and CLI.
-- Organized vault library: photo tiles, Photos/Videos/Documents/Other categories, search, folder-based albums, modified-month filters, date/name/size sorting, details and exact-checksum duplicate groups.
-- Selected-original export/restore, full-backup recovery, and photo navigation/zoom/fit. EXIF orientation is applied for display; originals are never converted. In-app preview supports bounded JPEG/PNG; videos/other formats remain recoverable originals.
-- Read-only USB phone folder/file selection with common-folder shortcuts and recursive scanning.
-- Managed USB import store: immutable generations, verified local reuse, durable checkpoints and file-level resume. A separate worker process can be stopped on cancellation or inactivity rather than blocking the interface on Windows USB calls.
-- Combined USB import → encrypted backup → library workflow using a pinned restic engine. Stored originals are checksum-verified before a snapshot appears as complete; older versions survive source edits/deletion.
-- Native Android companion and Windows HTTPS receiver: one-use QR pairing, exact certificate pinning, per-device revocation, on-phone SHA-256, missing-content uploads, reusable completed uploads and verified encrypted snapshots. Actual Java network classes passed a Windows receiver interoperability test; physical Android Wi-Fi acceptance is pending.
-- Opt-in account-protected unattended vault unlock, tray/sign-in setup, Android Wi-Fi scheduling and known USB reconnection selection. Android controls background timing; the PC must be awake. Setup includes clear revocation and a Private-profile/LocalSubnet firewall helper.
+## Evidence and limits
 
-![Wi-Fi setup before pairing — no credentials or personal data](assets/wifi-setup.png)
+The latest organizer suite passes 53 generated-data scenarios covering exact duplicates, source preservation, interruption/resume, date extraction, Takeout conflicts/changes, metadata size limits and people-index behavior. Regression runs pass 24 private-core, 21 Simple-storage, 24 USB, 24 private-LAN and 25 Simple-LAN scenarios. Packaged UI/media checks cover timeline virtualization, names/hiding/favorites, native inference on a public test portrait, Unicode video decoding, pause/seek, and the existing backup library.
 
-## Evidence and practical limits
+These are engineering fixtures, not production certification. Face-group accuracy across diverse real libraries, broad codec/HDR coverage, large-library performance, decoder isolation, disk-full/power-loss behavior, signed distribution, commercial dependency/model clearance and physical automatic phone backup remain release gates. HEIC/RAW face analysis, cloud storage, saved compression variants and iPhone support are not implemented. The native codec bundle's individual licensing obligations and model training provenance still require review before commercial distribution.
 
-| Check | Result | What it establishes |
-|---|---|---|
-| Core/library integration | 24 passed | Encryption, retention, safe/selected restore, cancellation, hostile metadata, cache defense, filters and corruption detection |
-| USB/store/worker fixtures | 24 passed | Recursion, strict repeat reuse, edits with unchanged size/time, journals, orphan recovery, cancellation and hung-process termination |
-| Automated UI control smoke | 12 passed | Real encrypted synthetic library: thumbnails, bounded pages, search/filters/duplicates, details/export, EXIF and detached thumbnail buffers |
-| LAN receiver and actual Java client interoperability | 25 passed | Pinning/pairing boundaries, authorization, retries, corruption repair, retained revisions, restart, exact-byte restore and actual JVM-to-Windows protocol execution |
-| Android unit checks / build | 9 passed; APK built | Pairing/path/hash boundaries. Lint: 0 errors, 10 warnings. This does not validate Android permissions, Keystore or WorkManager execution on a phone |
-| Pixel 7 hardware proof | Passed for 3 originals | Controlled worker cancellation, checkpoint resume, repeat verification/reuse, encrypted backup and full/selected restore |
-| Physical cable pull / full Camera-library copy | Pending | Not established by a subprocess stop or a small sample |
+Originals are never automatically deleted. A verified copy establishes byte agreement with the supplied source, not visual health, correct camera clocks or recovery of files missing from every supplied folder. Users review reports and their collection before making any independent cleanup decision.
 
-The user confirmed recovery in an earlier preview. Physical Pixel 7 / Android 17 companion installation, permission/pairing, Wi-Fi transfer, locked-phone/Doze/overnight behavior and Windows startup/firewall acceptance remain pending. Varied devices, power loss, disk full, large-library throughput, codec isolation and consumer-release hardening remain open. Guardrails (20k selected files, 10k entries per directory, depth 32) are not a production scale certification.
+## Engineering notes
 
-## Measured performance
+- [Architecture and tradeoffs](ARCHITECTURE.md)
+- [Dated development record](DEVELOPMENT.md)
 
-A generated local fixture of 60 x 8 KiB files took **46.143 seconds** in preview 0.1 and **3.261 seconds** with 0.3 streamed verification (14.15x on this test). Initialization was excluded; backup timing included source scans, encryption and verification. This is a small-file result on one PC, not USB or large-media throughput.
-
-The improvement removes one restic process per original by verifying a single bounded directory archive against the authoritative inventory. Checksums, file lengths, missing/extra-entry detection and source consistency checks remain in place. Metadata queries were also exercised across 20,000 items; media loading is a separate cost.
-
-## Explicit tradeoffs
-
-The USB and Wi-Fi stores contain **unencrypted** PC originals, prior generations and checkpoints; the vault is a separate encrypted copy. The UI discloses this. No automatic phone cleanup, duplicate deletion or staging prune occurs.
-
-Strict USB repeat runs freshly read unchanged phone files once; new/changed originals are read twice. The Wi-Fi companion hashes originals on the phone and uploads only missing/damaged content. It still freshly hashes all selected originals each run; phone I/O/battery and large-library profiling remain open. Full new PC generations consume additional staging space. No metadata-only content skip is claimed.
-
-Gallery metadata/thumbnails stay in memory, with bounded pages/cache and detached display buffers. Native media parsing still needs stronger isolation. Dates mean modification time, not capture time; albums currently map original folders. The library is scoped to the selected verified backup version, not an aggregate across all devices/backup sets.
-
-See [architecture](ARCHITECTURE.md) and [development record](DEVELOPMENT.md).
-
-## Next milestones
-
-1. Small Pixel Wi-Fi installation/pairing/backup/restore acceptance, then real cable reconnect and lock/Doze/overnight/reboot tests.
-2. Measure phone battery/hash costs and larger-library throughput; reduce staging/storage costs.
-3. Receiver, recovery and media/process hardening; signing, updates and unattended recovery.
-4. Richer media support and persistent custom collections.
-5. Optional optimized copies alongside originals, then release/signing/dependency review and external beta.
-
-Cloud, household features and iPhone remain future scope. No consumer download or release date is promised here.
-
-## Technology and attribution
-
-C#, .NET 10, WPF, Windows Portable Devices via community [MediaDevices](https://github.com/Bassman2/MediaDevices), and [restic](https://github.com/restic/restic). [Immich](https://github.com/immich-app/immich) and [LocalSend](https://github.com/localsend/localsend) were product references, not copied application source. Upstream work is attributed; commercial dependency/security review remains a release gate. AI-assisted development uses shared change records, explicit test evidence and human-directed product decisions.
+The project uses C#/.NET/WPF, native Android/Java, Windows device APIs, SHA-256 verification, restic for optional private archives, LibVLC and OpenCV. Maintained libraries provide media/backup engines; product workflows, verification and compatibility rules are tested separately. AI-assisted development is documented with actual validation and open gates. Commits reflect real completed work; no contribution history is fabricated or backdated.

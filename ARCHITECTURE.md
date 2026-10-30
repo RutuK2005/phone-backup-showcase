@@ -1,47 +1,42 @@
-# Current architecture — preview 0.4
+# Architecture — preview 0.8
 
 ```mermaid
 flowchart LR
-    Phone[Android / MTP] -->|read only| Worker[Isolated Windows USB worker]
-    Companion[Native Android companion] -->|Wi-Fi-bound pinned HTTPS| LAN[Authenticated PC receiver]
-    LAN -->|missing content only| Store
-    UI[WPF desktop] -->|structured protocol| Worker
-    Worker --> Scan[Recursive scan and strict verification]
-    Scan --> Store[Plaintext managed PC store]
-    Store --> Gen[Immutable original generations]
-    Gen --> Core[Shared backup core]
-    CLI[CLI] --> Core
-    UI --> Core
-    Core --> Restic[Pinned restic]
-    Restic --> Vault[Encrypted vault and recovery inventory]
-    Vault --> Verify[Streamed original-byte verification]
-    Vault --> Library[In-memory paged library]
-    Library --> UI
-    Vault --> Restore[Fresh-folder selected or full restore]
+    Phone[Android shared originals] -->|read-only MTP| USB[Isolated Windows USB worker]
+    Phone --> Companion[Native Android companion]
+    Companion -->|pinned HTTPS| LAN[Windows receiver]
+    USB --> Store[Readable immutable transport generations]
+    LAN --> Store
+    Store --> Storage[Shared backup storage interface]
+    Storage --> Simple[Readable Simple history]
+    Storage --> Private[Optional restic encrypted archives]
+    Simple --> Verify[Original-byte verification and safe restore]
+    Private --> Verify
+    Old[Existing folders and extracted Takeout] --> Scan[Read-only hash and date scan]
+    Scan --> Collection[New ordinary Year/Month collection]
+    Collection --> Check[Saved-byte and source-coverage checks]
+    Collection --> Gallery[Virtualized Memories gallery]
+    Gallery --> Media[Verified photos and LibVLC playback]
+    Gallery --> People[Optional local YuNet/SFace suggestions]
+    People --> Index[Plaintext names and preferences beside originals]
 ```
 
-## Transport and recovery
+## Integrity boundaries
 
-The adapter exposes list/stat/read only. A worker process isolates blocking Windows transport calls. The desktop validates structured messages and success/exit state; cancellation and an inactivity deadline stop the owned worker. Progress is tied to actual enumeration/read/local-check activity.
+Transfers are not complete backups until saved originals are checked. Earlier generations survive source changes/deletion. Restore and collection creation require new/empty destinations; interrupted work keeps checkpoints and refuses damaged existing copies rather than overwriting them. Multi-file backup is not an atomic phone/filesystem snapshot.
 
-Managed store plans and flushed append journals record completed originals. Repeats/resumes check phone bytes and local hashes, not filename/size/time alone. Earlier generations remain immutable. Torn unfinished journals and unjournaled committed files receive explicit recovery checks. Incomplete runs never become a completed import result.
+The collection scan hashes contents, groups exact duplicates, applies supported embedded dates or labeled filename inference, and preserves unknown dates. Opted-in Takeout metadata uses conservative sidecar matching and records hashes for later consistency checks. Output files receive independent checksum verification; every scanned source occurrence and added path is checked for coverage. Parsed Google metadata introduces plan v2; older apps reject it safely.
 
-## Storage and library
+## Gallery and people
 
-The backup core captures inventories inside encrypted snapshots, streams stored originals through strict archive/inventory/length/hash validation and rechecks PC sources before verified tagging. The metadata format remains compatible with prior v1 vaults. Restores require a new/empty destination and verify every restored original; selected export also validates membership in the saved inventory.
+WPF recycles timeline rows and loads nearby thumbnails with two workers and a bounded memory cache. Full original checks precede new decodes/playback; cached thumbnails remain historical previews. Video handling uses LibVLC and shell file selection handles Unicode paths. Native media isolation and a broad codec corpus remain open work.
 
-The library indexes the selected verified snapshot in memory. Search, folder albums, modified dates, categories and checksum duplicates are metadata operations. Bounded thumbnail pages decode verified originals into detached display pixels, without persistent plaintext thumbnails/catalog. Media decoding and temporary inventory/secret handling still need production hardening.
+People grouping is optional, local and automatic on supported unprocessed photos when a collection opens. A detector, aligned embedding and conservative exemplar comparison produce suggested groups. Manual naming, hiding, merging and correction remain available. A separately locked, atomically replaced plaintext index stores faces/preferences without changing originals. Forgetting removes active face records, not forensic traces. No network identity service is used. Scale and diverse accuracy testing are outstanding.
 
-## Wi-Fi and automation
+## Transport and storage tradeoffs
 
-One-use QR pairing pins the PC certificate and issues a device token; the phone never receives the vault passphrase. The PC stores protected token hashes, the phone encrypts its token with Android Keystore, and each side exposes revocation. Phone-side SHA-256 inventories and PC object rehashes decide which whole originals need transport. Immutable generations feed the same encrypted verification/recovery core; receipt alone does not indicate a verified backup.
+USB repeat verification reads every selected phone file; metadata alone cannot prove content identity. Wi-Fi hashes permitted phone originals and uploads missing/damaged content. Extra readable generations and partials consume disk space; no pruning is automatic. Private vault encryption does not encrypt separate transfer stores or collections.
 
-WorkManager requests Wi-Fi/battery-not-low periodic work, with optional charging. Android may defer work or impose quotas. Windows has opt-in per-account protected unlock, sign-in/tray/single-instance behavior and known USB reconnect polling after a manual selection. The published app locates its private runtime for startup. Private-profile/LocalSubnet firewall rules are an explicit setup action. The PC must be awake; there is no SSID allowlist, cloud relay or mobile-data fallback for bound backup connections.
+Android scheduling is best effort under OS quotas. Windows startup, tray operation and protected private unlock require opt-in. Pairing pins the PC certificate and supports revocation; firewall setup is scoped to Private networks/local subnet. PC wake, real Android permissions/Doze/reboot and physical cable reconnection need hardware acceptance. There is no SSID allowlist or cloud relay.
 
-## Tradeoffs
-
-- Plaintext staging is explicitly retained; encrypted direct streaming/staging is future work.
-- New generations use local copies rather than hardlinks, preserving independence but consuming disk space.
-- Repeat USB verification still reads all selected phone bytes once. Wi-Fi skips unchanged network uploads but currently hashes all selected phone originals each run; battery/scale profiling remains necessary.
-- Multi-file phone state is not an atomic snapshot. A physical cable-pull test is separate from killing a worker.
-- restic is an evaluated storage integration, not a guarantee for every future cloud/mobile requirement.
+The organized collection and selected backup-version library are separate today. Unifying them must preserve source provenance, immutable recovery history and honest verification status. Commercial release additionally needs dependency/plugin/model provenance, security, signing and installer/update reviews.
